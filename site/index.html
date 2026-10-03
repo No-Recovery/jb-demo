@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dopamine — визуальная демонстрация джейлбрейка</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- Иконки. Один спрайт, чтобы не плодить файлы. -->
+<svg class="sprite" aria-hidden="true">
+  <symbol id="i-drop" viewBox="0 0 24 24"><path d="M12 2.6c3.5 4.2 6.4 7.6 6.4 11.1a6.4 6.4 0 1 1-12.8 0C5.6 10.2 8.5 6.8 12 2.6Z" fill="currentColor"/><path d="M9.3 15.6c0 1.9 1.2 3.3 2.9 3.6-.3-2.4-.6-4.6-.6-6.6 0-1.5.3-2.8.8-4-1.8 1.6-3.1 3.9-3.1 7Z" fill="rgba(0,0,0,.28)"/></symbol>
+  <symbol id="i-box" viewBox="0 0 24 24"><path d="M12 2.8 21 7v10l-9 4.2L3 17V7l9-4.2Z" fill="currentColor"/><path d="M3 7l9 4.2L21 7l-9-4.2L3 7Z" fill="rgba(255,255,255,.35)"/><path d="M12 11.2V21l9-4V7l-9 4.2Z" fill="rgba(0,0,0,.18)"/></symbol>
+  <symbol id="i-folder" viewBox="0 0 24 24"><path d="M3 6.2A2.2 2.2 0 0 1 5.2 4h3.4l2 2.4h8.2A2.2 2.2 0 0 1 21 8.6v9.2a2.2 2.2 0 0 1-2.2 2.2H5.2A2.2 2.2 0 0 1 3 17.8V6.2Z" fill="currentColor"/></symbol>
+  <symbol id="i-wrench" viewBox="0 0 24 24"><path d="M20.3 4.2a5.6 5.6 0 0 1-7.4 6.9L6.1 18a2.3 2.3 0 0 1-3.2-3.3l6.9-6.9A5.6 5.6 0 0 1 17.1 2l-3 3 2.2 2.2 3-3a5.6 5.6 0 0 1 1 0Z" fill="currentColor"/></symbol>
+  <symbol id="i-gear" viewBox="0 0 24 24"><path d="M12 8.4a3.6 3.6 0 1 0 0 7.2 3.6 3.6 0 0 0 0-7.2Zm0 5.6a2 2 0 1 1 0-4 2 2 0 0 1 0 4Z" fill="currentColor"/><path d="m20.6 13.6.1-1.6-.1-1.6 1.9-1.4-1.9-3.4-2.3.8a7.9 7.9 0 0 0-2.8-1.6L15 2.4H9l-.5 2.4a7.9 7.9 0 0 0-2.8 1.6l-2.3-.8L1.5 9l1.9 1.4-.1 1.6.1 1.6L1.5 15l1.9 3.4 2.3-.8a7.9 7.9 0 0 0 2.8 1.6l.5 2.4h6l.5-2.4a7.9 7.9 0 0 0 2.8-1.6l2.3.8 1.9-3.4-1.9-1.4ZM12 17.8A5.8 5.8 0 1 1 12 6.2a5.8 5.8 0 0 1 0 11.6Z" fill="currentColor" opacity=".85"/></symbol>
+  <symbol id="i-power" viewBox="0 0 24 24"><path d="M13.6 2h-3.2v9.1h3.2V2Z" fill="currentColor"/><path d="M17.7 5.3 15.9 7a7 7 0 1 1-7.8 0L6.3 5.3a9.5 9.5 0 1 0 11.4 0Z" fill="currentColor"/></symbol>
+  <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 2.2 20 5v7c0 4.6-3.2 8.6-8 9.8-4.8-1.2-8-5.2-8-9.8V5l8-2.8Z" fill="currentColor"/></symbol>
+  <symbol id="i-trash" viewBox="0 0 24 24"><path d="M9 2h6l1 2h4v2H4V4h4l1-2Z" fill="currentColor"/><path d="M5.5 8h13l-1 12.2a2 2 0 0 1-2 1.8H8.5a2 2 0 0 1-2-1.8L5.5 8Z" fill="currentColor" opacity=".9"/></symbol>
+  <symbol id="i-cloud" viewBox="0 0 24 24"><path d="M17.5 18.5H7a4.5 4.5 0 0 1-.6-9A6 6 0 0 1 18 10.6a4 4 0 0 1-.5 7.9Z" fill="currentColor"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24"><path d="M12 2a5 5 0 0 1 5 5v3h1.2A1.8 1.8 0 0 1 20 11.8v8.4a1.8 1.8 0 0 1-1.8 1.8H5.8A1.8 1.8 0 0 1 4 20.2v-8.4A1.8 1.8 0 0 1 5.8 10H7V7a5 5 0 0 1 5-5Zm0 2.6A2.4 2.4 0 0 0 9.6 7v3h4.8V7A2.4 2.4 0 0 0 12 4.6Z" fill="currentColor"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M9.6 16.2 5.4 12l-1.8 1.8 6 6 12-12-1.8-1.8-10.2 10.2Z" fill="currentColor"/></symbol>
+  <symbol id="i-grid" viewBox="0 0 24 24"><path d="M4 4h6v6H4V4Zm10 0h6v6h-6V4ZM4 14h6v6H4v-6Zm10 0h6v6h-6v-6Z" fill="currentColor"/></symbol>
+  <symbol id="i-phone" viewBox="0 0 24 24"><path d="M7 2h10a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2Zm3 17h4v-1.4h-4V19Z" fill="currentColor"/></symbol>
+  <symbol id="i-wifi" viewBox="0 0 24 24"><path d="M12 18.6a1.7 1.7 0 1 0 0 3.4 1.7 1.7 0 0 0 0-3.4Zm0-5.3c1.8 0 3.5.7 4.7 1.9l1.6-1.6A9 9 0 0 0 12 11c-2.3 0-4.5.9-6.3 2.6l1.6 1.6a6.7 6.7 0 0 1 4.7-1.9Zm0-5.2c3 0 5.8 1.2 7.9 3.2l1.6-1.6A13.4 13.4 0 0 0 12 5.8c-3.5 0-6.8 1.4-9.5 3.9l1.6 1.6A11.7 11.7 0 0 1 12 8.1Zm0-5.2c4.3 0 8.2 1.7 11 4.5l1.6-1.6A17 17 0 0 0 12 .6 17 17 0 0 0 .4 7.5L2 9.1A15.4 15.4 0 0 1 12 2.9Z" fill="currentColor"/></symbol>
+  <symbol id="i-battery" viewBox="0 0 24 24"><path d="M9.5 4h5a2 2 0 0 1 2 2v1H20a1.5 1.5 0 0 1 1.5 1.5v9A1.5 1.5 0 0 1 20 19H4a1.5 1.5 0 0 1-1.5-1.5v-9A1.5 1.5 0 0 1 4 7h3.5V6a2 2 0 0 1 2-2Zm0 3.6h-5v7.8h15V7.6h-5v-.9a.4.4 0 0 0-.4-.4h-4.2a.4.4 0 0 0-.4.4v.9Z" fill="currentColor"/></symbol>
+  <symbol id="i-signal" viewBox="0 0 24 24"><path d="M3 17h2.5v4H3v-4Zm5-4h2.5v8H8v-8Zm5-4h2.5v12H13V9Zm5-4h2.5v16H18V5Z" fill="currentColor"/></symbol>
+  <symbol id="i-chevron" viewBox="0 0 24 24"><path d="M9 5.6 15.4 12 9 18.4 7 16.4 11.8 12 7 7.6 9 5.6Z" fill="currentColor"/></symbol>
+  <symbol id="i-terminal" viewBox="0 0 24 24"><path d="M3 4h18a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1Zm3.6 4.8L5 10.4l3.2 3.2 1.4-1.4L7.8 11l1.8-1.2-1.4-1.4L6.6 8.8Zm4.4 5.2h7v-1.8h-7V14Z" fill="currentColor"/></symbol>
+  <symbol id="i-heart" viewBox="0 0 24 24"><path d="M12 21s-8.4-4.9-8.4-10.4A4.6 4.6 0 0 1 12 7.6a4.6 4.6 0 0 1 8.4 3C20.4 16.1 12 21 12 21Z" fill="currentColor"/></symbol>
+  <symbol id="i-camera" viewBox="0 0 24 24"><path d="M9.4 3h5.2l1.2 2H20a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h4.2l1.2-2Z" fill="currentColor"/><circle cx="12" cy="13" r="4.6" fill="rgba(0,0,0,.35)"/></symbol>
+  <symbol id="i-music" viewBox="0 0 24 24"><path d="M20 3v12.6a3.4 3.4 0 1 1-2-3.1V7.6l-8 1.7v8.7a3.4 3.4 0 1 1-2-3.1V6.2L20 3Z" fill="currentColor"/></symbol>
+  <symbol id="i-mail" viewBox="0 0 24 24"><path d="M3 5h18a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1Zm9 8.4 8-5.6V7.2l-8 5.6-8-5.6v1.6l8 5.6Z" fill="currentColor"/></symbol>
+  <symbol id="i-maps" viewBox="0 0 24 24"><path d="M9 2 3 4.2v18L9 20l6 2 6-2.2v-18L15 4 9 2Zm0 2.2 6 2v11.6l-6-2V4.2ZM3.4 6.1l4.2-1.5v11.6l-4.2 1.5V6.1Zm13.2 11.6 4.2-1.5V4.6l-4.2 1.5v11.6Z" fill="currentColor"/></symbol>
+  <symbol id="i-notes" viewBox="0 0 24 24"><path d="M5 3h14a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Zm1 15h12l-6-7-6 7Z" fill="currentColor"/><circle cx="8.5" cy="8" r="1.4" fill="rgba(255,255,255,.6)"/></symbol>
+  <symbol id="i-weather" viewBox="0 0 24 24"><path d="M12 6a5 5 0 0 1 4.9 4 4 4 0 0 1-.4 8H7.5a4.5 4.5 0 0 1-.6-9A5.5 5.5 0 0 1 12 6Z" fill="currentColor"/></symbol>
+  <symbol id="i-timer" viewBox="0 0 24 24"><path d="M9 1h6v2H9V1Zm3 4a8.5 8.5 0 1 1 0 17 8.5 8.5 0 0 1 0-17Zm0 3v5.5l4 2.4 1.4-2.3-3.4-2V8h-2Z" fill="currentColor"/></symbol>
+</svg>
+
+<main class="stage">
+  <header class="stage__head">
+    <h1>Dopamine</h1>
+    <p>Визуальная демонстрация: джейлбрейк, выбор пакетов, запуск менеджера.</p>
+  </header>
+
+  <div class="phone" id="phone">
+    <div class="phone__frame">
+      <div class="phone__island" aria-hidden="true"></div>
+      <div class="phone__screen" id="screen">
+
+        <!-- Обои -->
+        <div class="wallpaper" data-wp="lock"></div>
+        <div class="wallpaper" data-wp="home"></div>
+
+        <!-- Статус-бар -->
+        <div class="statusbar">
+          <span class="statusbar__time">9:41</span>
+          <span class="statusbar__right">
+            <svg class="ic ic--xs"><use href="#i-signal"/></svg>
+            <svg class="ic ic--xs"><use href="#i-wifi"/></svg>
+            <svg class="ic ic--xs"><use href="#i-battery"/></svg>
+          </span>
+        </div>
+
+        <!-- ── Экран блокировки ───────────────────────────── -->
+        <section class="screen screen--lock" data-screen="lock">
+          <div class="lock__top">
+            <svg class="ic ic--md"><use href="#i-lock"/></svg>
+          </div>
+          <div class="lock__clock">
+            <div class="lock__time">9:41</div>
+            <div class="lock__date">понедельник, 27 сентября</div>
+          </div>
+          <div class="lock__bottom">
+            <div class="lock__hint">Смахните вверх, чтобы открыть</div>
+            <div class="lock__bar"></div>
+          </div>
+        </section>
+
+        <!-- ── Домашний экран ─────────────────────────────── -->
+        <section class="screen screen--home" data-screen="home">
+          <div class="home__grid" id="homeGrid"><!-- иконки рисует app.js --></div>
+          <div class="home__dock" id="homeDock"><!-- иконки рисует app.js --></div>
+          <div class="home__pager">
+            <span class="dot dot--on"></span><span class="dot"></span><span class="dot"></span>
+          </div>
+        </section>
+
+        <!-- ── Dopamine ───────────────────────────────────── -->
+        <section class="screen screen--app" data-screen="dopamine">
+          <div class="navbar">
+            <button class="navbar__back" data-goto="home" aria-label="Назад">
+              <svg class="ic ic--sm ic--flip"><use href="#i-chevron"/></svg>
+              <span>Назад</span>
+            </button>
+          </div>
+          <div class="app">
+            <div class="app__hero">
+              <div class="app__logo"><svg class="ic ic--xl"><use href="#i-drop"/></svg></div>
+              <div class="app__name">Dopamine</div>
+              <div class="app__ver">v2.0.1</div>
+            </div>
+
+            <div class="devinfo">
+              <div class="devinfo__row"><span>iPhone</span><b>iPhone 13 Pro</b></div>
+              <div class="devinfo__row"><span>Версия iOS</span><b>16.7.10</b></div>
+              <div class="devinfo__row"><span>Чип</span><b>A15 Bionic</b></div>
+              <div class="devinfo__row"><span>Статус</span><b class="dim">не установлен</b></div>
+            </div>
+
+            <button class="jb" id="jbButton" data-goto="jbreaking">
+              <span class="jb__label">Джейлбрейк</span>
+            </button>
+            <div class="jb__hint">Приложение попросит подтверждение</div>
+
+            <ul class="menu">
+              <li><svg class="ic ic--sm"><use href="#i-wrench"/></svg>Твики<span class="menu__chev"><svg class="ic ic--xs ic--flip"><use href="#i-chevron"/></svg></span></li>
+              <li><svg class="ic ic--sm"><use href="#i-folder"/></svg>Файлы<span class="menu__chev"><svg class="ic ic--xs ic--flip"><use href="#i-chevron"/></svg></span></li>
+              <li><svg class="ic ic--sm"><use href="#i-terminal"/></svg>Логи<span class="menu__chev"><svg class="ic ic--xs ic--flip"><use href="#i-chevron"/></svg></span></li>
+              <li><svg class="ic ic--sm"><use href="#i-gear"/></svg>Настройки<span class="menu__chev"><svg class="ic ic--xs ic--flip"><use href="#i-chevron"/></svg></span></li>
+            </ul>
+          </div>
+        </section>
+
+        <!-- ── Джейлбрейк идёт ────────────────────────────── -->
+        <section class="screen screen--app" data-screen="jbreaking">
+          <div class="navbar">
+            <button class="navbar__back navbar__back--off" aria-label="Назад">
+              <svg class="ic ic--sm ic--flip"><use href="#i-chevron"/></svg>
+              <span>Назад</span>
+            </button>
+          </div>
+          <div class="app">
+            <div class="app__hero">
+              <div class="app__logo app__logo--busy"><svg class="ic ic--xl"><use href="#i-drop"/></svg></div>
+              <div class="app__name">Выполняется джейлбрейк</div>
+              <div class="app__ver" id="jbPercent">0%</div>
+            </div>
+
+            <div class="bar"><div class="bar__fill" id="jbBar"></div></div>
+
+            <pre class="log" id="jbLog"></pre>
+          </div>
+        </section>
+
+        <!-- ── Готово ─────────────────────────────────────── -->
+        <section class="screen screen--app" data-screen="jbdone">
+          <div class="navbar">
+            <button class="navbar__back" data-goto="dopamine" aria-label="Назад">
+              <svg class="ic ic--sm ic--flip"><use href="#i-chevron"/></svg>
+              <span>Назад</span>
+            </button>
+          </div>
+          <div class="app">
+            <div class="app__hero">
+              <div class="app__logo app__logo--ok"><svg class="ic ic--xl"><use href="#i-check"/></svg></div>
+              <div class="app__name">Джейлбрейк активен</div>
+              <div class="app__ver">Dopamine 2.0.1 · rootless</div>
+            </div>
+
+            <div class="okbox">
+              <div class="okbox__line"><svg class="ic ic--sm"><use href="#i-check"/></svg>Подсистема /var/jb смонтирована</div>
+              <div class="okbox__line"><svg class="ic ic--sm"><use href="#i-check"/></svg>Менеджер пакетов не установлен</div>
+              <div class="okbox__line"><svg class="ic ic--sm"><use href="#i-check"/></svg>Определение устройства завершено</div>
+            </div>
+
+            <button class="jb jb--alt" data-goto="packages">
+              <span class="jb__label">Установить пакеты</span>
+            </button>
+            <div class="jb__hint">Выберите менеджер пакетов и твики</div>
+          </div>
+        </section>
+
+        <!-- ── Выбор пакетов ──────────────────────────────── -->
+        <section class="screen screen--app" data-screen="packages">
+          <div class="navbar">
+            <button class="navbar__back" data-goto="jbdone" aria-label="Назад">
+              <svg class="ic ic--sm ic--flip"><use href="#i-chevron"/></svg>
+              <span>Назад</span>
+            </button>
+            <div class="navbar__title">Пакеты</div>
+            <button class="navbar__action" data-goto="installing">Установить</button>
+          </div>
+          <div class="picker">
+            <div class="picker__note" id="pickerNote">Отметьте нужные пакеты</div>
+            <ul class="plist" id="plist"><!-- пакеты рисует app.js --></ul>
+            <div class="picker__foot"><span id="pickerCount">0 выбрано</span></div>
+          </div>
+        </section>
+
+        <!-- ── Установка ──────────────────────────────────── -->
+        <section class="screen screen--app" data-screen="installing">
+          <div class="navbar">
+            <button class="navbar__back navbar__back--off" aria-label="Назад">
+              <svg class="ic ic--sm ic--flip"><use href="#i-chevron"/></svg>
+              <span>Назад</span>
+            </button>
+            <div class="navbar__title">Установка</div>
+          </div>
+          <div class="app">
+            <div class="inst__head">
+              <div class="inst__title" id="instTitle">Подготовка</div>
+              <div class="inst__sub" id="instSub">0 из 0</div>
+            </div>
+            <div class="bar"><div class="bar__fill" id="instBar"></div></div>
+            <ul class="instlist" id="instList"></ul>
+          </div>
+        </section>
+
+        <!-- ── Менеджер пакетов (Sileo) ───────────────────── -->
+        <section class="screen screen--app" data-screen="manager">
+          <div class="navbar">
+            <button class="navbar__back" data-goto="newicons" aria-label="Назад">
+              <svg class="ic ic--sm ic--flip"><use href="#i-chevron"/></svg>
+              <span>Назад</span>
+            </button>
+            <div class="navbar__title" id="managerName">Sileo</div>
+          </div>
+          <div class="pkg">
+            <div class="search"><svg class="ic ic--xs"><use href="#i-grid"/></svg><span>Поиск пакетов</span></div>
+            <div class="sechead">Установлено</div>
+            <ul class="pkglist" id="pkglist"></ul>
+          </div>
+        </section>
+
+      </div>
+      <div class="phone__glare" aria-hidden="true"></div>
+    </div>
+  </div>
+
+  <!-- ── Управление ─────────────────────────────────────── -->
+  <div class="panel">
+    <div class="panel__steps" id="steps"></div>
+    <div class="panel__actions">
+      <button class="btn" id="prev">Назад</button>
+      <button class="btn btn--primary" id="next">Далее</button>
+    </div>
+    <div class="panel__note" id="panelNote"></div>
+  </div>
+</main>
+
+<script src="app.js"></script>
+</body>
+</html>

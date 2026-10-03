@@ -1,0 +1,4 @@
+# Pages serves whatever bytes are in gh-pages. Normalising to LF keeps diffs
+# clean and stops git from rewriting line endings on every Windows checkout.
+* text=auto eol=lf
+*.png binary

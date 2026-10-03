@@ -1,0 +1,64 @@
+name: pages
+
+on:
+  push:
+    branches: ["main"]
+    paths: ["site/**", ".github/workflows/pages.yml"]
+  pull_request:
+  workflow_dispatch:
+
+# Two pushes would race on the gh-pages ref and half of them would lose.
+concurrency:
+  group: pages-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    name: publish site to gh-pages
+    runs-on: ubuntu-24.04
+
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # Pages is served from the gh-pages branch at its root, not from /site,
+      # so the subtree under site/ becomes the branch root. Same arrangement as
+      # the wipecode repository.
+      - name: Publish to gh-pages
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          set -euo pipefail
+          SPLIT="$(git subtree split --prefix site HEAD)"
+          git push --force origin "$SPLIT":gh-pages
+          echo "pages source: $SPLIT"
+
+      # The site is plain HTML, so a smoke test is enough: the root must serve
+      # index.html and the two assets it loads with relative paths. A project
+      # page lives under the repository name, which is also why the site must
+      # not reference its own files by absolute path.
+      #
+      # Pages rebuilds asynchronously after the branch push, so the first few
+      # attempts legitimately 404. Retry for a few minutes before failing.
+      - name: Smoke test
+        if: github.event_name != 'pull_request'
+        run: |
+          set -euo pipefail
+          BASE="https://no-recovery.github.io/jb-demo"
+          for attempt in $(seq 1 15); do
+            code="$(curl -s -o /dev/null -w '%{http_code}' "$BASE/")"
+            echo "attempt $attempt: $BASE/ -> $code"
+            [ "$code" = "200" ] && break
+            sleep 20
+          done
+          [ "$code" = "200" ] || { echo "pages never came up" >&2; exit 1; }
+
+          for path in "/index.html" "/styles.css" "/app.js"; do
+            c="$(curl -s -o /dev/null -w '%{http_code}' "$BASE$path")"
+            echo "$path -> $c"
+            [ "$c" = "200" ] || { echo "bad status for $path" >&2; exit 1; }
+          done
+
+          curl -s "$BASE/" | grep -q 'id="screen"' || {
+            echo "served page is not the demo" >&2; exit 1; }
