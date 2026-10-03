@@ -63,5 +63,10 @@ jobs:
             [ "$c" = "200" ] || { echo "bad status for $path" >&2; exit 1; }
           done
 
-          curl -s "$BASE/" | grep -q 'id="screen"' || {
+          # Download to a file rather than piping into grep -q. Under pipefail
+          # grep exiting on the first match sends SIGPIPE upstream, curl dies
+          # with a non-zero status and the whole pipeline reports failure.
+          page="$RUNNER_TEMP/index.html"
+          curl -s "$BASE/" -o "$page"
+          grep -q 'id="screen"' "$page" || {
             echo "served page is not the demo" >&2; exit 1; }
