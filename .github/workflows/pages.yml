@@ -26,12 +26,15 @@ jobs:
       # Pages is served from the gh-pages branch at its root, not from /site,
       # so the subtree under site/ becomes the branch root. Same arrangement as
       # the wipecode repository.
+      #
+      # The destination must be a full refname. git refuses to guess when the
+      # source side is a bare commit sha, which is what subtree split prints.
       - name: Publish to gh-pages
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: |
           set -euo pipefail
           SPLIT="$(git subtree split --prefix site HEAD)"
-          git push --force origin "$SPLIT":gh-pages
+          git push --force origin "$SPLIT:refs/heads/gh-pages"
           echo "pages source: $SPLIT"
 
       # The site is plain HTML, so a smoke test is enough: the root must serve
